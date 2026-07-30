@@ -5,7 +5,7 @@ import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
-import { visuallyHidden } from 'src/sections/user/utils';
+import { visuallyHidden } from 'src/utils/table-utils';
 
 // ----------------------------------------------------------------------
 

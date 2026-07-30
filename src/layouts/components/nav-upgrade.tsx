@@ -21,7 +21,7 @@ export function NavUpgrade({ sx, ...other }: StackProps) {
       ]}
       {...other}
     >
-      <Typography
+{/*       <Typography
         variant="h6"
         sx={[
           (theme) => ({
@@ -35,30 +35,30 @@ export function NavUpgrade({ sx, ...other }: StackProps) {
         ]}
       >
         More features?
-      </Typography>
+      </Typography> */}
 
-      <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+{/*       <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
         {`From only `}
         <Box component="strong" sx={{ color: 'text.primary' }}>
           $69
         </Box>
-      </Typography>
+      </Typography> */}
 
       <Box
         component="img"
         alt="Minimal dashboard"
-        src="/assets/illustrations/illustration-dashboard.webp"
+        src="/assets/illustrations/logo_texto.svg"
         sx={{ width: 200, my: 2 }}
       />
 
-      <Button
+{/*       <Button
         href="https://material-ui.com/store/items/minimal-dashboard/"
         target="_blank"
         variant="contained"
         color="inherit"
       >
         Upgrade to Pro
-      </Button>
+      </Button> */}
     </Box>
   );
 }

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <!-- Gradiente Principal (Verde a Azul) -->
+    <linearGradient id="grad-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    
+    <!-- Gradiente Cobre/Fuego (Dinamismo de pelota) -->
+    <linearGradient id="grad-accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EF4444" />
+    </linearGradient>
+  </defs>
+
+  <!-- Isotipo: Cancha + Dinamismo Multideporte -->
+  <g transform="translate(0, 0)">
+    <!-- Órbita exterior / Borde de movimiento -->
+    <path d="M 110 110 A 130 130 0 1 1 290 290" fill="none" stroke="url(#grad-primary)" stroke-width="24" stroke-linecap="round" />
+    
+    <!-- Trazo dinámico de velocidad -->
+    <path d="M 320 120 A 130 130 0 0 1 290 290" fill="none" stroke="url(#grad-accent)" stroke-width="12" stroke-linecap="round" stroke-dasharray="15 10" />
+
+    <!-- Cancha Geométrica Interior -->
+    <rect x="130" y="130" width="140" height="140" rx="20" fill="none" stroke="#1E293B" stroke-width="16" />
+    
+    <!-- Línea Central -->
+    <line x1="130" y1="200" x2="270" y2="200" stroke="#1E293B" stroke-width="12" />
+    
+    <!-- Círculo Central -->
+    <circle cx="200" cy="200" r="28" fill="none" stroke="#1E293B" stroke-width="12" />
+  </g>
+</svg>

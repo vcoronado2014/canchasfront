@@ -293,6 +293,8 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
         </Box>
       </Scrollbar>
 
+      <NavUpgrade /> 
+
       {slots?.bottomArea}
     </>
   );

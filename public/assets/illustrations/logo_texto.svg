@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 550" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad-primary-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="grad-accent-2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EF4444" />
+    </linearGradient>
+  </defs>
+
+  <!-- Isotipo: Cancha + Dinamismo -->
+  <g transform="translate(0, 0)">
+    <!-- Órbita exterior -->
+    <path d="M 160 160 A 130 130 0 1 1 340 340" fill="none" stroke="url(#grad-primary-2)" stroke-width="24" stroke-linecap="round" />
+    
+    <!-- Trazo dinámico de pelota -->
+    <path d="M 370 170 A 130 130 0 0 1 340 340" fill="none" stroke="url(#grad-accent-2)" stroke-width="12" stroke-linecap="round" stroke-dasharray="15 10" />
+
+    <!-- Cancha Interior -->
+    <rect x="180" y="180" width="140" height="140" rx="20" fill="none" stroke="#1E293B" stroke-width="16" />
+    <!-- Línea Central -->
+    <line x1="180" y1="250" x2="320" y2="250" stroke="#1E293B" stroke-width="12" />
+    <!-- Círculo Central -->
+    <circle cx="250" cy="250" r="28" fill="none" stroke="#1E293B" stroke-width="12" />
+  </g>
+
+  <!-- Nombre de la marca -->
+  <text x="250" y="430" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="40" fill="#0F172A" letter-spacing="2">
+    TU CANCHA
+  </text>
+
+  <!-- Eslogan -->
+  <text x="250" y="475" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="20" fill="#64748B" letter-spacing="1">
+    Tu ritmo, tu cancha
+  </text>
+</svg>
