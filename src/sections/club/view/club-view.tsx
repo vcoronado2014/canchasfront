@@ -22,7 +22,7 @@ import { TableHeadComponent } from 'src/components/tables/TableHeadComponent';
 
 import { TableEmptyRow } from 'src/components/tables/TableEmptyRow';
 import { ClubTableToolbar } from '../club-table-toolbars';
-import { emptyRows, applyFilter, getComparator } from '../utils';
+import { applyFilter, getComparator, emptyRows, visuallyHidden } from 'src/utils/table-utils';
 
 import type { ClubProps } from '../club-table-row';
 import type { ClubListItem } from 'src/types/club';
@@ -59,6 +59,12 @@ export function ClubView() {
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
+
+    const handleDeleteRow = useCallback((id: number | string) => {
+        setClubs((prevClubs) => prevClubs.filter((club) => club.id !== id));
+        // Opcional: si la fila eliminada estaba seleccionada, la quitamos de selected
+        table.onSelectRow(id.toString());
+    }, [table]);
 
   const notFound = !dataFiltered.length && !!filterName;
 
@@ -140,6 +146,7 @@ if (!loading) {
                                             row={row}
                                             selected={table.selected.includes(row.id.toString())}
                                             onSelectRow={() => table.onSelectRow(row.id.toString())}
+                                            onDeleteRow={() => handleDeleteRow(row.id)}
                                         />
                                     ))}
 

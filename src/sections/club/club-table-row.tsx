@@ -24,7 +24,7 @@ import { useAuth } from 'src/auth/use-auth';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
-import { formatDate } from './utils';
+import { formatDate } from 'src/utils/table-utils';
 
 // ----------------------------------------------------------------------
 
@@ -46,9 +46,10 @@ type ClubTableRowProps = {
   selected: boolean;
   onSelectRow: () => void;
   onRefreshList?: () => void; // Para recargar la grilla tras eliminar
+  onDeleteRow: () => void;
 };
 
-export function ClubTableRow({ row, selected, onSelectRow, onRefreshList }: ClubTableRowProps) {
+export function ClubTableRow({ row, selected, onSelectRow, onRefreshList, onDeleteRow }: ClubTableRowProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -90,6 +91,7 @@ export function ClubTableRow({ row, selected, onSelectRow, onRefreshList }: Club
     setIsDeleting(true);
     try {
       await deleteClub(row.id);
+      onDeleteRow();
       handleCloseDeleteDialog();
       if (onRefreshList) {
         onRefreshList();
@@ -105,8 +107,6 @@ export function ClubTableRow({ row, selected, onSelectRow, onRefreshList }: Club
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
         <TableCell component="th">{row.nombre}</TableCell>
-
-        {/* <TableCell>{row.owner ?? '-'}</TableCell> */}
 
         <TableCell>{row.regionNombre ?? '-'}</TableCell>
 
