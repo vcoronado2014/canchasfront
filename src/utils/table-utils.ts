@@ -103,3 +103,15 @@ export function formatDate(dateString?: string | null): string {
 
   return `${day}-${month}-${year}`;
 }
+
+// ----------------------------------------------------------------------
+// Devuelve la fecha actual como número entero YYYYMMDD
+// ----------------------------------------------------------------------
+export function getCurrentDateInteger(): number {
+  const date = new Date();
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+
+  return Number(`${year}${month}${day}`);
+}
