@@ -11,6 +11,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { getCanchasByClub } from 'src/services/cancha.service';
 import { getClubs } from 'src/services/club.service';
@@ -25,6 +26,7 @@ import { useAuth } from 'src/auth/use-auth';
 
 import { CanchaTableRow } from 'src/sections/cancha/cancha-table-row';
 import { ClubTableToolbar } from 'src/sections/club/club-table-toolbars'; // Puedes reutilizar la Toolbar
+import { CanchaCompactList } from './cancha-compact-list';
 import { emptyRows, applyFilter, getComparator } from 'src/utils/table-utils';
 import { useTable } from 'src/hooks/use-table'; // Reutiliza el hook useTable o decláralo
 
@@ -34,6 +36,7 @@ import type { ClubListItem } from 'src/types/club';
 export function CanchaView() {
   const { user } = useAuth();
   const table = useTable();
+  const isCompactView = useMediaQuery('(max-width:830px)');
 
   const isSuperAdmin = user?.rol === 'SuperAdmin';
 
@@ -140,58 +143,73 @@ export function CanchaView() {
           }}
         />
 
-        <Scrollbar>
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
-              <TableHeadComponent
-                order={table.order}
-                orderBy={table.orderBy}
-                rowCount={canchas.length}
-                numSelected={table.selected.length}
-                onSort={table.onSort}
-                onSelectAllRows={(checked) =>
-                  table.onSelectAllRows(
-                    checked,
-                    canchas.map((c) => c.id.toString())
-                  )
-                }
-                useSelected={false}
-                headLabel={[
-                  { id: 'foto', label: 'Imagen' },
-                  { id: 'nombre', label: 'Nombre' },
-                  { id: 'tipoCancha', label: 'Tipo' },
-                  { id: 'precioHora', label: 'Precio/Hora' },
-                  { id: 'duracionMinimaMinutos', label: 'Bloque Mín.' },
-                  { id: 'activa', label: 'Estado' },
-                  { id: '' },
-                ]}
-              />
-              <TableBody>
-                {dataFiltered
-                  .slice(
-                    table.page * table.rowsPerPage,
-                    table.page * table.rowsPerPage + table.rowsPerPage
-                  )
-                  .map((row) => (
-                    <CanchaTableRow
-                      key={row.id}
-                      row={row}
-                      selected={table.selected.includes(row.id.toString())}
-                      onSelectRow={() => table.onSelectRow(row.id.toString())}
-                      onDeleteRow={() => handleDeleteRow(row.id)}
-                    />
-                  ))}
-
-                <TableEmptyRow
-                  height={68}
-                  emptyRows={emptyRows(table.page, table.rowsPerPage, canchas.length)}
+        {isCompactView ? (
+          <CanchaCompactList
+            loading={loading}
+            canchas={canchas}
+            dataFiltered={dataFiltered}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            selected={table.selected}
+            filterName={filterName}
+            notFound={notFound}
+            onSelectRow={table.onSelectRow}
+            onDeleteRow={handleDeleteRow}
+          />
+        ) : (
+          <Scrollbar>
+            <TableContainer sx={{ overflow: 'unset' }}>
+              <Table sx={{ minWidth: 800 }}>
+                <TableHeadComponent
+                  order={table.order}
+                  orderBy={table.orderBy}
+                  rowCount={canchas.length}
+                  numSelected={table.selected.length}
+                  onSort={table.onSort}
+                  onSelectAllRows={(checked) =>
+                    table.onSelectAllRows(
+                      checked,
+                      canchas.map((c) => c.id.toString())
+                    )
+                  }
+                  useSelected={false}
+                  headLabel={[
+                    { id: 'foto', label: 'Imagen' },
+                    { id: 'nombre', label: 'Nombre' },
+                    { id: 'tipoCancha', label: 'Tipo' },
+                    { id: 'precioHora', label: 'Precio/Hora' },
+                    { id: 'duracionMinimaMinutos', label: 'Bloque Mín.' },
+                    { id: 'activa', label: 'Estado' },
+                    { id: '' },
+                  ]}
                 />
+                <TableBody>
+                  {dataFiltered
+                    .slice(
+                      table.page * table.rowsPerPage,
+                      table.page * table.rowsPerPage + table.rowsPerPage
+                    )
+                    .map((row) => (
+                      <CanchaTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id.toString())}
+                        onSelectRow={() => table.onSelectRow(row.id.toString())}
+                        onDeleteRow={() => handleDeleteRow(row.id)}
+                      />
+                    ))}
 
-                {notFound && <TableNoData message={filterName} />}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Scrollbar>
+                  <TableEmptyRow
+                    height={68}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, canchas.length)}
+                  />
+
+                  {notFound && <TableNoData message={filterName} />}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Scrollbar>
+        )}
 
         <TablePagination
           component="div"

@@ -1,7 +1,4 @@
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
-
+import { CompactList } from 'src/components/compact-list';
 import { ClubTableRow } from '../club-table-row';
 import type { ClubProps } from '../club-table-row';
 import type { ClubListItem } from 'src/types/club';
@@ -34,44 +31,25 @@ export function ClubCompactList({
   onRefreshList,
 }: ClubCompactListProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2 }}>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <>
-          {dataFiltered
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            .map((row) => (
-              <ClubTableRow
-                key={row.id}
-                compact
-                row={row}
-                selected={selected.includes(row.id.toString())}
-                onSelectRow={() => onSelectRow(row.id.toString())}
-                onDeleteRow={() => onDeleteRow(row.id)}
-                onRefreshList={onRefreshList}
-              />
-            ))}
-
-          {!loading && !clubs.length && (
-            <Box sx={{ py: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                No hay clubes registrados.
-              </Typography>
-            </Box>
-          )}
-
-          {!loading && notFound && (
-            <Box sx={{ py: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                No se encontraron clubes con “{filterName}”.
-              </Typography>
-            </Box>
-          )}
-        </>
+    <CompactList
+      loading={loading}
+      items={dataFiltered}
+      page={page}
+      rowsPerPage={rowsPerPage}
+      emptyMessage="No hay clubes registrados."
+      notFound={notFound}
+      filterName={filterName}
+      getItemKey={(row) => row.id}
+      renderItem={(row) => (
+        <ClubTableRow
+          compact
+          row={row}
+          selected={selected.includes(row.id.toString())}
+          onSelectRow={() => onSelectRow(row.id.toString())}
+          onDeleteRow={() => onDeleteRow(row.id)}
+          onRefreshList={onRefreshList}
+        />
       )}
-    </Box>
+    />
   );
 }

@@ -38,7 +38,7 @@ export function ClubTableToolbar({ numSelected, filterName, onFilterName }: Club
           fullWidth
           value={filterName}
           onChange={onFilterName}
-          placeholder="Buscar club..."
+          placeholder="Buscar..."
           startAdornment={
             <InputAdornment position="start">
               <Iconify width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />

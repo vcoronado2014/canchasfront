@@ -1,24 +1,23 @@
 import { CompactList } from 'src/components/compact-list';
-import { UserTableRow } from '../user-table-row';
-import type { UsuarioListItem } from 'src/types/usuario';
+import { CanchaTableRow } from '../cancha-table-row';
+import type { CanchaListItem } from 'src/types/cancha';
 
-type UserCompactListProps = {
+type CanchaCompactListProps = {
   loading: boolean;
-  users: UsuarioListItem[];
-  dataFiltered: UsuarioListItem[];
+  canchas: CanchaListItem[];
+  dataFiltered: CanchaListItem[];
   page: number;
   rowsPerPage: number;
-  selected: number[];
+  selected: string[];
   filterName: string;
   notFound: boolean;
-  onSelectRow: (id: number) => void;
-  onEditRow: (id: number) => void;
-  onDeleteRow: (id: number) => Promise<void> | void;
+  onSelectRow: (id: string) => void;
+  onDeleteRow: (id: number | string) => void;
 };
 
-export function UserCompactList({
+export function CanchaCompactList({
   loading,
-  users,
+  canchas,
   dataFiltered,
   page,
   rowsPerPage,
@@ -26,26 +25,24 @@ export function UserCompactList({
   filterName,
   notFound,
   onSelectRow,
-  onEditRow,
   onDeleteRow,
-}: UserCompactListProps) {
+}: CanchaCompactListProps) {
   return (
     <CompactList
       loading={loading}
       items={dataFiltered}
       page={page}
       rowsPerPage={rowsPerPage}
-      emptyMessage="No hay usuarios registrados."
+      emptyMessage="No hay canchas registradas."
       notFound={notFound}
       filterName={filterName}
       getItemKey={(row) => row.id}
       renderItem={(row) => (
-        <UserTableRow
+        <CanchaTableRow
           compact
           row={row}
-          selected={selected.includes(row.id)}
-          onSelectRow={() => onSelectRow(row.id)}
-          onEditRow={() => onEditRow(row.id)}
+          selected={selected.includes(row.id.toString())}
+          onSelectRow={() => onSelectRow(row.id.toString())}
           onDeleteRow={() => onDeleteRow(row.id)}
         />
       )}
