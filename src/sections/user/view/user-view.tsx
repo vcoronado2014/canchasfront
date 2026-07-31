@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
@@ -27,6 +28,7 @@ import { UserTableToolbar } from '../user-table-toolbar';
 //import { emptyRows, applyFilter, getComparator } from '../utils';
 import { emptyRows, applyFilter, getComparator } from 'src/utils/table-utils';
 import { TableCell, TableRow } from '@mui/material';
+import { UserCompactList } from './user-compact-list';
 
 // ----------------------------------------------------------------------
 
@@ -42,6 +44,7 @@ const TABLE_HEAD = [
 export function UserView() {
   const navigate = useNavigate();
   const table = useTable();
+  const isCompactView = useMediaQuery('(max-width:830px)');
 
   const [users, setUsers] = useState<UsuarioListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -120,61 +123,77 @@ export function UserView() {
           }}
         />
 
-        <Scrollbar>
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
-              <TableHeadComponent
-                useSelected={false}
-                order={table.order}
-                orderBy={table.orderBy}
-                rowCount={users.length}
-                numSelected={table.selected.length}
-                onSort={table.onSort}
-                onSelectAllRows={(checked) =>
-                  table.onSelectAllRows(
-                    checked,
-                    users.map((user) => user.id)
-                  )
-                }
-                headLabel={TABLE_HEAD}
-              />
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 5 }}>
-                      <CircularProgress />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
+        {isCompactView ? (
+          <UserCompactList
+            loading={loading}
+            users={users}
+            dataFiltered={dataFiltered}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            selected={table.selected}
+            filterName={filterName}
+            notFound={notFound}
+            onSelectRow={table.onSelectRow}
+            onEditRow={(id) => navigate(`/dashboard/usuarios/editar/${id}`)}
+            onDeleteRow={handleDeleteRow}
+          />
+        ) : (
+          <Scrollbar>
+            <TableContainer sx={{ overflow: 'unset' }}>
+              <Table sx={{ minWidth: 800 }}>
+                <TableHeadComponent
+                  useSelected={false}
+                  order={table.order}
+                  orderBy={table.orderBy}
+                  rowCount={users.length}
+                  numSelected={table.selected.length}
+                  onSort={table.onSort}
+                  onSelectAllRows={(checked) =>
+                    table.onSelectAllRows(
+                      checked,
+                      users.map((user) => user.id)
                     )
-                    .map((row) => (
-                      <UserTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onEditRow={() => navigate(`/dashboard/usuarios/editar/${row.id}`)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                      />
-                    ))
-                )}
+                  }
+                  headLabel={TABLE_HEAD}
+                />
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 5 }}>
+                        <CircularProgress />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    dataFiltered
+                      .slice(
+                        table.page * table.rowsPerPage,
+                        table.page * table.rowsPerPage + table.rowsPerPage
+                      )
+                      .map((row) => (
+                        <UserTableRow
+                          key={row.id}
+                          row={row}
+                          selected={table.selected.includes(row.id)}
+                          onSelectRow={() => table.onSelectRow(row.id)}
+                          onEditRow={() => navigate(`/dashboard/usuarios/editar/${row.id}`)}
+                          onDeleteRow={() => handleDeleteRow(row.id)}
+                        />
+                      ))
+                  )}
 
-                {!loading && (
-                  <TableEmptyRow
-                    height={68}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, users.length)}
-                  />
-                )}
+                  {!loading && (
+                    <TableEmptyRow
+                      height={68}
+                      emptyRows={emptyRows(table.page, table.rowsPerPage, users.length)}
+                    />
+                  )}
 
-                {!loading && notFound && <TableNoData message={filterName} />}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Scrollbar>
+                  {!loading && notFound && <TableNoData message={filterName} />}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Scrollbar>
+        )}
 
         <TablePagination
           component="div"

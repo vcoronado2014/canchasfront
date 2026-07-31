@@ -8,6 +8,7 @@ import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { getClubs } from 'src/services/club.service';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -28,12 +29,14 @@ import type { ClubProps } from '../club-table-row';
 import type { ClubListItem } from 'src/types/club';
 import { RouterLink } from 'src/routes/components';
 import { useAuth } from 'src/auth/use-auth';
+import { ClubCompactList } from './club-compact-list';
 
 // ----------------------------------------------------------------------
 
 export function ClubView() {
     const { user } = useAuth();
   const table = useTable();
+  const isCompactView = useMediaQuery('(max-width:830px)');
 
     const [clubs, setClubs] = useState<ClubListItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -107,59 +110,75 @@ if (!loading) {
                     }}
                 /> 
 
-                <Scrollbar>
-                    <TableContainer sx={{ overflow: 'unset' }}>
-                        <Table sx={{ minWidth: 800 }}>
-                            <TableHeadComponent
-                                order={table.order}
-                                orderBy={table.orderBy}
-                                rowCount={clubs.length}
-                                numSelected={table.selected.length}
-                                onSort={table.onSort}
-                                onSelectAllRows={(checked) =>
-                                    table.onSelectAllRows(
-                                        checked,
-                                        clubs.map((club) => club.id.toString())
-                                    )
-                                }
-                                useSelected={false}
-                                headLabel={[
-                                    { id: 'nombre', label: 'Nombre' },
-                                    /* { id: 'owner', label: 'Administrador' }, */
-                                    { id: 'regionNombre', label: 'Región' },
-                                    { id: 'comunaNombre', label: 'Comuna' },
-                                    { id: 'fechaProxVencimiento', label: 'Vencimiento' },
-                                    { id: 'subdominio', label: 'Subdominio' },
-                                    { id: 'estadoSuscripcion', label: 'Estado' },
-                                    { id: '' },
-                                ]}
-                            />
-                            <TableBody>
-                                {dataFiltered
-                                    .slice(
-                                        table.page * table.rowsPerPage,
-                                        table.page * table.rowsPerPage + table.rowsPerPage
-                                    )
-                                    .map((row) => (
-                                        <ClubTableRow
-                                            key={row.id}
-                                            row={row}
-                                            selected={table.selected.includes(row.id.toString())}
-                                            onSelectRow={() => table.onSelectRow(row.id.toString())}
-                                            onDeleteRow={() => handleDeleteRow(row.id)}
-                                        />
-                                    ))}
+                {isCompactView ? (
+                    <ClubCompactList
+                        loading={loading}
+                        clubs={clubs}
+                        dataFiltered={dataFiltered}
+                        page={table.page}
+                        rowsPerPage={table.rowsPerPage}
+                        selected={table.selected}
+                        filterName={filterName}
+                        notFound={notFound}
+                        onSelectRow={table.onSelectRow}
+                        onDeleteRow={handleDeleteRow}
+                        onRefreshList={loadClubs}
+                    />
+                ) : (
+                    <Scrollbar>
+                        <TableContainer sx={{ overflow: 'unset' }}>
+                            <Table sx={{ minWidth: 800 }}>
+                                <TableHeadComponent
+                                    order={table.order}
+                                    orderBy={table.orderBy}
+                                    rowCount={clubs.length}
+                                    numSelected={table.selected.length}
+                                    onSort={table.onSort}
+                                    onSelectAllRows={(checked) =>
+                                        table.onSelectAllRows(
+                                            checked,
+                                            clubs.map((club) => club.id.toString())
+                                        )
+                                    }
+                                    useSelected={false}
+                                    headLabel={[
+                                        { id: 'nombre', label: 'Nombre' },
+                                        /* { id: 'owner', label: 'Administrador' }, */
+                                        { id: 'regionNombre', label: 'Región' },
+                                        { id: 'comunaNombre', label: 'Comuna' },
+                                        { id: 'fechaProxVencimiento', label: 'Vencimiento' },
+                                        { id: 'subdominio', label: 'Subdominio' },
+                                        { id: 'estadoSuscripcion', label: 'Estado' },
+                                        { id: '' },
+                                    ]}
+                                />
+                                <TableBody>
+                                    {dataFiltered
+                                        .slice(
+                                            table.page * table.rowsPerPage,
+                                            table.page * table.rowsPerPage + table.rowsPerPage
+                                        )
+                                        .map((row) => (
+                                            <ClubTableRow
+                                                key={row.id}
+                                                row={row}
+                                                selected={table.selected.includes(row.id.toString())}
+                                                onSelectRow={() => table.onSelectRow(row.id.toString())}
+                                                onDeleteRow={() => handleDeleteRow(row.id)}
+                                            />
+                                        ))}
 
-                                <TableEmptyRow
-                                    height={68}
-                                    emptyRows={emptyRows(table.page, table.rowsPerPage, clubs.length)}
-                                /> 
+                                    <TableEmptyRow
+                                        height={68}
+                                        emptyRows={emptyRows(table.page, table.rowsPerPage, clubs.length)}
+                                    /> 
 
-                                {notFound && <TableNoData message={filterName} />}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Scrollbar>
+                                    {notFound && <TableNoData message={filterName} />}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Scrollbar>
+                )}
 
                 <TablePagination
                     component="div"
