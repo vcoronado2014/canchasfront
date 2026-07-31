@@ -168,8 +168,8 @@ export function CanchaEditView() {
 
   return (
     <DashboardContent>
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
-        <Typography variant="h4" sx={{ flexGrow: 1, pl: 7 }}>
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Editar Cancha
         </Typography>
       </Box>

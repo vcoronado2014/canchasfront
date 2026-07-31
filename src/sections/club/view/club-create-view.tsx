@@ -131,9 +131,10 @@ export function ClubCreateView() {
           mb: 3,
           display: 'flex',
           alignItems: 'center',
+          textAlign: 'center'
         }}
       >
-        <Typography variant="h4" sx={{ flexGrow: 1, pl: 7 }}>Nuevo Club</Typography>
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>Nuevo Club</Typography>
       </Box>
 
       <form onSubmit={handleSubmit}>

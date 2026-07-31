@@ -54,6 +54,10 @@ export const CanchaListPage = lazy(() => import('src/pages/cancha'));
 export const CanchaCreatePage = lazy(() => import('src/pages/cancha-create'));
 export const CanchaEditPage = lazy(() => import('src/pages/cancha-edit'));
 
+//users
+export const UserCreatePage = lazy(() => import('src/pages/user-create'));
+export const UserEditPage = lazy(() => import('src/pages/user-edit'));
+
 const renderFallback = () => (
   <Box
     sx={{
@@ -105,7 +109,29 @@ export const routesSection: RouteObject[] = [
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'user', element: <UserPage /> },
+      //{ path: 'user', element: <UserPage /> },
+      {
+        path: 'user',
+        children: [
+          { index: true, element: <UserPage /> },
+          {
+            path: 'new',
+            element: (
+              <RoleGuard roles={['SuperAdmin', 'ClubAdmin']}>
+                <UserCreatePage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: ':id/edit',
+            element: (
+              <RoleGuard roles={['SuperAdmin', 'ClubAdmin']}>
+                <UserEditPage />
+              </RoleGuard>
+            ),
+          },
+        ],
+      },
       //{ path: 'club', element: <ClubPage /> },
       {
         path: 'clubs',

@@ -173,10 +173,11 @@ export function ClubEditView() {
         sx={{
           mb: 3,
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'center', 
+          textAlign: 'center'
         }}
       >
-        <Typography variant="h4" sx={{ flexGrow: 1, pl: 7 }}>Editar Club</Typography>
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>Editar Club</Typography>
       </Box>
 
       <form onSubmit={handleSubmit}>

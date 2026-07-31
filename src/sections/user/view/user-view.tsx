@@ -107,7 +107,7 @@ export function UserView() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={() => navigate('/dashboard/usuarios/crear')}
+          onClick={() => navigate('/dashboard/user/new')}
         >
           Nuevo Usuario
         </Button>
@@ -134,7 +134,7 @@ export function UserView() {
             filterName={filterName}
             notFound={notFound}
             onSelectRow={table.onSelectRow}
-            onEditRow={(id) => navigate(`/dashboard/usuarios/editar/${id}`)}
+            onEditRow={(id) => navigate(`/dashboard/user/${id}/edit`)}
             onDeleteRow={handleDeleteRow}
           />
         ) : (
@@ -175,7 +175,7 @@ export function UserView() {
                           row={row}
                           selected={table.selected.includes(row.id)}
                           onSelectRow={() => table.onSelectRow(row.id)}
-                          onEditRow={() => navigate(`/dashboard/usuarios/editar/${row.id}`)}
+                          onEditRow={() => navigate(`/dashboard/user/${row.id}/edit`)}
                           onDeleteRow={() => handleDeleteRow(row.id)}
                         />
                       ))

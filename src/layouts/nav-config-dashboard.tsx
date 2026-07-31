@@ -90,7 +90,7 @@ export const navData: NavItem[] = [
 
   {
     title: 'Usuarios',
-    path: '/dashboard/users',
+    path: '/dashboard/user',
     icon: icon('ic-user'),
     roles: [
       'SuperAdmin',
@@ -104,7 +104,7 @@ export const navData: NavItem[] = [
       },
       {
         title: 'Crear',
-        path: '/dashboard/clubs/new',
+        path: '/dashboard/user/new',
         icon: icon('ic-add'),
       },
     ],
