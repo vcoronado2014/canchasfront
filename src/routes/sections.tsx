@@ -30,6 +30,12 @@ export const LandingPage = lazy(
 export const ClientHomePage = lazy(
   () => import('src/pages/client-home')
 );
+export const ClienteDisponibilidadPage = lazy(
+  () => import('src/pages/cliente/disponibilidad')
+);
+export const ClienteMisReservasPage = lazy(
+  () => import('src/pages/cliente/mis-reservas')
+);
 
 export const SignInPage = lazy(
   () => import('src/pages/sign-in')
@@ -53,6 +59,12 @@ export const CanchaPage = lazy(() => import('src/pages/cancha'));
 export const CanchaListPage = lazy(() => import('src/pages/cancha'));
 export const CanchaCreatePage = lazy(() => import('src/pages/cancha-create'));
 export const CanchaEditPage = lazy(() => import('src/pages/cancha-edit'));
+
+//reservas
+export const ReservaPage = lazy(() => import('src/pages/reserva'));
+export const ReservaCreatePage = lazy(() => import('src/pages/reserva-create'));
+export const ReservaEditPage = lazy(() => import('src/pages/reserva-edit'));
+export const DisponibilidadPage = lazy(() => import('src/pages/disponibilidad'));
 
 //users
 export const UserCreatePage = lazy(() => import('src/pages/user-create'));
@@ -163,6 +175,36 @@ export const routesSection: RouteObject[] = [
           { path: ':id/edit', element: <CanchaEditPage /> },
         ],
       },
+      {
+        path: 'reservations',
+        children: [
+          { index: true, element: <ReservaPage /> },
+          {
+            path: 'new',
+            element: (
+              <RoleGuard roles={['SuperAdmin', 'ClubAdmin', 'CourtManager']}>
+                <ReservaCreatePage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: ':id/edit',
+            element: (
+              <RoleGuard roles={['SuperAdmin', 'ClubAdmin', 'CourtManager']}>
+                <ReservaEditPage />
+              </RoleGuard>
+            ),
+          },
+        ],
+      },
+      {
+        path: 'disponibilidad',
+        element: (
+          <RoleGuard roles={['SuperAdmin', 'ClubAdmin', 'AgendaCreator', 'CourtManager']}>
+            <DisponibilidadPage />
+          </RoleGuard>
+        ),
+      },
       { path: 'blog', element: <BlogPage /> },
     ],
   },
@@ -188,6 +230,14 @@ export const routesSection: RouteObject[] = [
       {
         index: true,
         element: <ClientHomePage />,
+      },
+      {
+        path: 'disponibilidad',
+        element: <ClienteDisponibilidadPage />,
+      },
+      {
+        path: 'mis-reservas',
+        element: <ClienteMisReservasPage />,
       },
     ],
   },

@@ -62,7 +62,7 @@ export const navData: NavItem[] = [
   {
     title: 'Canchas',
     path: '/dashboard/canchas',
-    icon: icon('ic-company'),
+    icon: icon('ic-cancha'),
     roles: [
       'SuperAdmin',
       'ClubAdmin',
@@ -118,6 +118,30 @@ export const navData: NavItem[] = [
     roles: [
       'SuperAdmin',
       'ClubAdmin',
+      'CourtManager'
+    ],
+    children: [
+      {
+        title: 'Listado',
+        path: '/dashboard/reservations',
+        icon: icon('ic-list'),
+      },
+      {
+        title: 'Crear',
+        path: '/dashboard/reservations/new',
+        icon: icon('ic-add'),
+      },
+    ],
+  },
+
+  {
+    title: 'Disponibilidad',
+    path: '/dashboard/disponibilidad',
+    icon: icon('ic-calendar'),
+    roles: [
+      'SuperAdmin',
+      'ClubAdmin',
+      'AgendaCreator',
       'CourtManager'
     ],
   },

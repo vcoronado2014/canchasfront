@@ -6,6 +6,7 @@ import { FeaturedClubs } from './components/feaured-club';
 import { Sports } from './components/sports';
 import { HowItWorks } from './components/HowItWorks';
 import { Footer } from './components/Footer';
+import { LandingDisponibilidad } from './components/landing-disponibilidad';
 
 /* import { Hero } from './hero';
 import { Footer } from './footer';
@@ -23,6 +24,7 @@ export function LandingView() {
     >
         <Navbar/>
         <Hero/>
+        <LandingDisponibilidad />
         <FeaturedClubs clubs={_clubs} />
 
         <Sports/>

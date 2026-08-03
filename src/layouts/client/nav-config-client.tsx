@@ -23,6 +23,12 @@ export const clientNavData: NavItemClient[] = [
 
 
     {
+        title:'Disponibilidad',
+        path:'/cliente/disponibilidad',
+        icon:icon('ic-calendar'),
+    },
+
+    {
         title:'Mis reservas',
         path:'/cliente/mis-reservas',
         icon:icon('ic-calendar'),
