@@ -6,62 +6,79 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { FormControl, InputLabel, Select, TablePagination, useMediaQuery } from '@mui/material';
 
 import { useAuth } from 'src/auth/use-auth';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { getCanchasByClub } from 'src/services/cancha.service';
 import { getClubs } from 'src/services/club.service';
 import {
-  crearDisponibilidadRango,
   deleteDisponibilidad,
   getDisponividadesPorClub,
-  updateDisponibilidad,
 } from 'src/services/disponibilidad.service';
 import { getReservasClub } from 'src/services/reserva.service';
 import type { CanchaListItem } from 'src/types/cancha';
 import type { ClubListItem } from 'src/types/club';
-import type { CrearDisponibilidadRangoPayload, DisponibilidadItem, ReservaListItem } from 'src/types/reserva';
+import type { DisponibilidadItem, ReservaListItem } from 'src/types/reserva';
+import { RouterLink } from 'src/routes/components';
+import { Iconify } from 'src/components/iconify';
+import { ClubTableToolbar } from 'src/sections/club/club-table-toolbars';
+import { useTable } from 'src/hooks/use-table';
+import { DisponibilidadCompactList } from './disponibilidad-compact-list';
+import { applyFilter, emptyRows, getComparator } from 'src/utils/table-utils';
+import { Scrollbar } from 'src/components/scrollbar';
+import { TableHeadComponent } from 'src/components/tables/TableHeadComponent';
+import { DisponibilidadTableRow } from 'src/sections/reserva/disponibilidad-table-row';
+import { TableEmptyRow } from 'src/components/tables/TableEmptyRow';
+import { TableNoData } from 'src/components/tables/TableNoData';
+import { orderBy } from 'es-toolkit';
 
 export function DisponibilidadView() {
   const { user } = useAuth();
   const isSuperAdmin = user?.rol === 'SuperAdmin';
+  const table = useTable({
+    defaultOrderBy: 'fecha',
+    defaultOrder: 'desc'
+  });
+  const isCompactView = useMediaQuery('(max-width:830px)');
 
   const [clubs, setClubs] = useState<ClubListItem[]>([]);
   const [canchas, setCanchas] = useState<CanchaListItem[]>([]);
   const [items, setItems] = useState<DisponibilidadItem[]>([]);
   const [reservas, setReservas] = useState<ReservaListItem[]>([]);
+  
+  // Filtros
   const [selectedClubId, setSelectedClubId] = useState<number | ''>(user?.clubId ?? '');
   const [selectedCanchaId, setSelectedCanchaId] = useState<number | ''>('');
+  
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
-  const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().slice(0, 10));
-  const [horaInicio, setHoraInicio] = useState('09:00');
-  const [horaFin, setHoraFin] = useState('10:00');
-  const [motivo, setMotivo] = useState('');
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [filterName, setFilterName] = useState('');
+
+  // 1. Cargar la lista de clubes si es SuperAdmin
   useEffect(() => {
-    async function loadClubs() {
-      try {
-        const data = await getClubs();
-        const allowedClubs = isSuperAdmin ? data : data.filter((clubItem) => clubItem.id === (user?.clubId ?? 0));
-        setClubs(allowedClubs);
-        const initialClub = user?.clubId ?? allowedClubs[0]?.id ?? '';
-        setSelectedClubId(initialClub);
-      } catch (err) {
-        console.error('Error al cargar clubs:', err);
-      }
+    if (isSuperAdmin) {
+      getClubs().then((data) => {
+        setClubs(data);
+        if (data.length > 0 && !selectedClubId) {
+          setSelectedClubId(data[0].id);
+        }
+      });
     }
+  }, [isSuperAdmin]);
 
-    loadClubs();
-  }, [isSuperAdmin, user?.clubId]);
-
+  // 2. Cargar canchas del club seleccionado
   useEffect(() => {
     if (!selectedClubId) {
       setCanchas([]);
@@ -73,17 +90,16 @@ export function DisponibilidadView() {
       try {
         const data = await getCanchasByClub(Number(selectedClubId));
         setCanchas(data);
-        if (data.length > 0) {
-          setSelectedCanchaId(data[0].id);
-        }
       } catch (err) {
         console.error('Error al cargar canchas:', err);
+        setCanchas([]);
       }
     }
 
     loadCanchas();
   }, [selectedClubId]);
 
+  // 3. Cargar disponibilidades y reservas del club
   useEffect(() => {
     if (!selectedClubId) {
       setItems([]);
@@ -96,8 +112,8 @@ export function DisponibilidadView() {
       setLoading(true);
       try {
         const [availabilityData, reservasData] = await Promise.all([
-          getDisponividadesPorClub(Number(selectedClubId), fechaFiltro),
-          getReservasClub(Number(selectedClubId)),
+          getDisponividadesPorClub(Number(selectedClubId), fechaDesde || undefined, fechaHasta || undefined),
+          getReservasClub(Number(selectedClubId), fechaDesde || undefined, fechaHasta || undefined),
         ]);
         setItems(availabilityData);
         setReservas(reservasData);
@@ -111,7 +127,16 @@ export function DisponibilidadView() {
     }
 
     loadData();
-  }, [selectedClubId, fechaFiltro]);
+  }, [selectedClubId, fechaDesde, fechaHasta]);
+
+  // Limpiar/Resetear Filtros
+  const handleResetFilters = () => {
+    setSelectedCanchaId('');
+    setFilterName('');
+    if (isSuperAdmin && clubs.length > 0) {
+      setSelectedClubId(clubs[0].id);
+    }
+  };
 
   const hasReservationsForItem = useMemo(
     () => (item: DisponibilidadItem) => {
@@ -131,71 +156,6 @@ export function DisponibilidadView() {
     [reservas]
   );
 
-  const resetForm = () => {
-    setEditingId(null);
-    setFechaDesde('');
-    setFechaHasta('');
-    setHoraInicio('09:00');
-    setHoraFin('10:00');
-    setMotivo('');
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setSaving(true);
-    setFeedback(null);
-    setError(null);
-
-    if (!selectedClubId || !selectedCanchaId || !fechaDesde || !fechaHasta) {
-      setError('Selecciona club, cancha y rango de fechas para crear la disponibilidad.');
-      setSaving(false);
-      return;
-    }
-
-    const payload: CrearDisponibilidadRangoPayload = {
-      canchaId: Number(selectedCanchaId),
-      fechaDesde: new Date(`${fechaDesde}T00:00:00.000Z`).toISOString(),
-      fechaHasta: new Date(`${fechaHasta}T00:00:00.000Z`).toISOString(),
-      horaInicio,
-      horaFin,
-      motivo: motivo || undefined,
-      diasSemana: [],
-    };
-
-    try {
-      if (editingId) {
-        await updateDisponibilidad(editingId, payload);
-        setFeedback('Disponibilidad actualizada correctamente.');
-      } else {
-        await crearDisponibilidadRango(payload);
-        setFeedback('Disponibilidad creada correctamente.');
-      }
-
-      resetForm();
-      setFechaFiltro(fechaDesde);
-      setSelectedCanchaId(Number(selectedCanchaId));
-    } catch (err) {
-      console.error('Error al guardar disponibilidad:', err);
-      setError('No se pudo guardar la disponibilidad.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleEdit = (item: DisponibilidadItem) => {
-    if (hasReservationsForItem(item)) {
-      setError('No se puede editar esta disponibilidad porque ya tiene reservas asociadas.');
-      return;
-    }
-
-    setEditingId(item.id);
-    setFechaDesde(item.fecha);
-    setFechaHasta(item.fecha);
-    setHoraInicio(item.horaInicio);
-    setHoraFin(item.horaFin);
-    setMotivo(item.motivo ?? '');
-  };
-
   const handleDelete = async (item: DisponibilidadItem) => {
     if (hasReservationsForItem(item)) {
       setError('No se puede eliminar esta disponibilidad porque ya tiene reservas asociadas.');
@@ -212,168 +172,191 @@ export function DisponibilidadView() {
     }
   };
 
+  // Filtrar items por cancha seleccionada antes del ordenamiento/búsqueda general
+  const itemsFilteredByCancha = useMemo(() => {
+    if (!selectedCanchaId) return items;
+    return items.filter((item) => item.canchaId === Number(selectedCanchaId));
+  }, [items, selectedCanchaId]);
+
+  const dataFiltered = applyFilter({
+    inputData: itemsFilteredByCancha,
+    comparator: getComparator(table.order, table.orderBy),
+    filterName,
+  });
+
+  const notFound = !dataFiltered.length && (!!filterName || !!selectedCanchaId);
+
   return (
     <DashboardContent>
-      <Stack spacing={3}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Box>
-            <Typography variant="h4">Disponibilidad</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Crea bloques de disponibilidad por club y cancha, y gestiona los que aún no tienen reservas asociadas.
-            </Typography>
-          </Box>
-        </Box>
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>
+          Disponibilidad
+        </Typography>
 
-        {feedback && <Alert severity="success">{feedback}</Alert>}
-        {error && <Alert severity="error">{error}</Alert>}
+        {selectedClubId && (
+          <Button
+            component={RouterLink}
+            href={`/dashboard/disponibilidad/crear`}
+            variant="contained"
+            color="inherit"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+          >
+            Nueva disponibilidad
+          </Button>
+        )}
+      </Box>
 
-        <Card sx={{ p: 3 }}>
-          <form onSubmit={handleSubmit}>
-            <Stack spacing={2.5}>
-              <TextField
-                select
-                fullWidth
-                label="Club"
+      {/* Barra de Filtros (Club + Canchas + Reset) */}
+      <Card sx={{ p: 2, mb: 3 }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          alignItems="center"
+        >
+          {/* Selector de Club (Solo SuperAdmin) */}
+          {isSuperAdmin && (
+            <FormControl fullWidth>
+              <InputLabel id="club-select-label">Seleccionar Club</InputLabel>
+              <Select
+                labelId="club-select-label"
                 value={selectedClubId}
-                onChange={(event) => setSelectedClubId(Number(event.target.value))}
-                required
-                disabled={!isSuperAdmin}
+                label="Seleccionar Club"
+                onChange={(e) => {
+                  setSelectedClubId(Number(e.target.value));
+                  setSelectedCanchaId(''); // Reiniciar cancha al cambiar de club
+                }}
               >
-                {clubs.map((clubItem) => (
-                  <MenuItem key={clubItem.id} value={clubItem.id}>
-                    {clubItem.nombre}
+                {clubs.map((club) => (
+                  <MenuItem key={club.id} value={club.id}>
+                    {club.nombre}
                   </MenuItem>
                 ))}
-              </TextField>
+              </Select>
+            </FormControl>
+          )}
 
-              <TextField
-                select
-                fullWidth
-                label="Cancha"
-                value={selectedCanchaId}
-                onChange={(event) => setSelectedCanchaId(Number(event.target.value))}
-                required
-              >
-                {canchas.map((cancha) => (
-                  <MenuItem key={cancha.id} value={cancha.id}>
-                    {cancha.nombre}
-                  </MenuItem>
-                ))}
-              </TextField>
+          {/* Selector de Canchas */}
+          <FormControl fullWidth disabled={!selectedClubId || canchas.length === 0}>
+            <InputLabel id="cancha-select-label">Todas las Canchas</InputLabel>
+            <Select
+              labelId="cancha-select-label"
+              value={selectedCanchaId}
+              label="Todas las Canchas"
+              onChange={(e) => setSelectedCanchaId(e.target.value ? Number(e.target.value) : '')}
+            >
+              <MenuItem value="">
+                <em>Todas las Canchas</em>
+              </MenuItem>
+              {canchas.map((cancha) => (
+                <MenuItem key={cancha.id} value={cancha.id}>
+                  {cancha.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-              <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Fecha desde"
-                  value={fechaDesde}
-                  onChange={(event) => setFechaDesde(event.target.value)}
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  required
+          {/* Botón para Limpiar Filtros */}
+          <Tooltip title="Limpiar Filtros">
+            <IconButton onClick={handleResetFilters} color="error" sx={{ borderRadius: 1 }}>
+              <Iconify icon="solar:trash-bin-trash-bold" width={24} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+      </Card>
+
+      <Card>
+        <ClubTableToolbar
+          numSelected={table.selected.length}
+          filterName={filterName}
+          onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
+            setFilterName(event.target.value);
+            table.onResetPage();
+          }}
+        />
+
+        {isCompactView ? (
+          <DisponibilidadCompactList
+            loading={loading}
+            items={itemsFilteredByCancha}
+            dataFiltered={dataFiltered}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            selected={table.selected}
+            filterName={filterName}
+            notFound={notFound}
+            onSelectRow={table.onSelectRow}
+            onDeleteRow={() => {
+              console.log('delete');
+            }}
+          />
+        ) : (
+          <Scrollbar>
+            <TableContainer sx={{ overflow: 'unset' }}>
+              <Table sx={{ minWidth: 800 }}>
+                <TableHeadComponent
+                  order={table.order}
+                  orderBy={table.orderBy}
+                  rowCount={itemsFilteredByCancha.length}
+                  numSelected={table.selected.length}
+                  onSort={table.onSort}
+                  onSelectAllRows={(checked) =>
+                    table.onSelectAllRows(
+                      checked,
+                      itemsFilteredByCancha.map((c) => c.id.toString())
+                    )
+                  }
+                  useSelected={false}
+                  headLabel={[
+                    { id: 'nombreCancha', label: 'Nombre' },
+                    { id: 'fecha', label: 'Fecha' },
+                    { id: 'horaInicio', label: 'Horario' },
+                    { id: 'motivo', label: 'Motivo' },
+                    { id: '' },
+                  ]}
                 />
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Fecha hasta"
-                  value={fechaHasta}
-                  onChange={(event) => setFechaHasta(event.target.value)}
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  required
-                />
-              </Box>
 
-              <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-                <TextField
-                  fullWidth
-                  type="time"
-                  label="Hora inicio"
-                  value={horaInicio}
-                  onChange={(event) => setHoraInicio(event.target.value)}
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  required
-                />
-                <TextField
-                  fullWidth
-                  type="time"
-                  label="Hora fin"
-                  value={horaFin}
-                  onChange={(event) => setHoraFin(event.target.value)}
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  required
-                />
-              </Box>
+                <TableBody>
+                  {dataFiltered
+                    .slice(
+                      table.page * table.rowsPerPage,
+                      table.page * table.rowsPerPage + table.rowsPerPage
+                    )
+                    .map((row) => (
+                      <DisponibilidadTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id.toString())}
+                        onSelectRow={() => table.onSelectRow(row.id.toString())}
+                        onDeleteRow={() => handleDelete(row)}
+                      />
+                    ))}
 
-              <TextField
-                fullWidth
-                label="Motivo"
-                value={motivo}
-                onChange={(event) => setMotivo(event.target.value)}
-              />
+                  <TableEmptyRow
+                    height={68}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
+                  />
 
-              <Stack direction="row" spacing={1.5} justifyContent="flex-end">
-                {editingId ? (
-                  <Button variant="outlined" color="inherit" onClick={resetForm}>
-                    Cancelar
-                  </Button>
-                ) : null}
-                <Button type="submit" variant="contained" disabled={saving}>
-                  {editingId ? 'Guardar cambios' : 'Crear disponibilidad'}
-                </Button>
-              </Stack>
-            </Stack>
-          </form>
-        </Card>
+                  {notFound && <TableNoData message={filterName || 'No hay disponibilidades para esta cancha'} />}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Scrollbar>
+        )}
 
-        <Card sx={{ p: 3 }}>
-          <Stack spacing={2}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-              <Typography variant="h6">Bloques de disponibilidad</Typography>
-              <TextField
-                type="date"
-                label="Filtrar por fecha"
-                value={fechaFiltro}
-                onChange={(event) => setFechaFiltro(event.target.value)}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ minWidth: 220 }}
-              />
-            </Box>
-
-            {loading ? (
-              <Typography color="text.secondary">Cargando bloques...</Typography>
-            ) : items.length === 0 ? (
-              <Typography color="text.secondary">No hay bloques de disponibilidad para esta fecha.</Typography>
-            ) : (
-              <Stack spacing={2}>
-                {items.map((item) => {
-                  const reservado = hasReservationsForItem(item);
-                  return (
-                    <Card key={item.id} variant="outlined" sx={{ p: 2 }}>
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }}>
-                        <Box>
-                          <Typography variant="subtitle1">{item.cancha?.nombre ?? `Cancha ${item.canchaId}`}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {item.fecha} · {item.horaInicio} - {item.horaFin}
-                          </Typography>
-                          {item.motivo ? <Typography variant="body2">Motivo: {item.motivo}</Typography> : null}
-                        </Box>
-                        <Stack direction="row" spacing={1}>
-                          <Button variant="outlined" size="small" onClick={() => handleEdit(item)} disabled={reservado}>
-                            Editar
-                          </Button>
-                          <Button variant="text" color="error" size="small" onClick={() => handleDelete(item)} disabled={reservado}>
-                            Eliminar
-                          </Button>
-                        </Stack>
-                      </Stack>
-                      {reservado ? <Typography variant="caption" color="error">No editable por reservas tomadas.</Typography> : null}
-                    </Card>
-                  );
-                })}
-              </Stack>
-            )}
-          </Stack>
-        </Card>
-      </Stack>
+        <TablePagination
+          component="div"
+          page={table.page}
+          count={dataFiltered.length}
+          rowsPerPage={table.rowsPerPage}
+          onPageChange={table.onChangePage}
+          rowsPerPageOptions={[5, 10, 25]}
+          onRowsPerPageChange={table.onChangeRowsPerPage}
+          labelRowsPerPage="Filas por página:"
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
+          }
+        />
+      </Card>
     </DashboardContent>
   );
 }

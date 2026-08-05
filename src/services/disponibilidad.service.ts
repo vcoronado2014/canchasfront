@@ -30,10 +30,15 @@ export async function updateDisponibilidad(
  */
 export async function getDisponividadesPorClub(
   clubId: number,
-  fecha?: string
+  fechaInicio?: string,
+  fechaFin?: string
 ): Promise<DisponibilidadItem[]> {
+  const params: Record<string, string | undefined> = {};
+  if (fechaInicio) params.fechaInicio = fechaInicio;
+  if (fechaFin) params.fechaFin = fechaFin;
+
   const response = await api.get<DisponibilidadItem[]>(`/Disponibilidad/club/${clubId}`, {
-    params: fecha ? { fecha } : undefined,
+    params: Object.keys(params).length ? params : undefined,
   });
   return response.data;
 }

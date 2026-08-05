@@ -10,6 +10,14 @@ import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 import { Club } from 'src/auth/auth-types';
 
+const baseFotos = (import.meta.env.VITE_URL_FOTOS ?? '').toString();
+const pref = (url?: string | null) => {
+  if (!url) return undefined;
+  if (/^https?:\/\//.test(url)) return url;
+  const base = baseFotos.replace(/\/+$/, '');
+  return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+};
+
 type Props = {
   clubs: Club[];
 };
@@ -49,7 +57,7 @@ export function FeaturedClubs({ clubs }: Props) {
                 <CardMedia
                   component="img"
                   height="240"
-                  image={club.fotoPrincipalUrl}
+                  image={pref(club.fotoPrincipalUrl) ?? club.fotoPrincipalUrl}
                   alt={club.nombre}
                 />
 

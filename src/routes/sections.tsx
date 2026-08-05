@@ -65,6 +65,7 @@ export const ReservaPage = lazy(() => import('src/pages/reserva'));
 export const ReservaCreatePage = lazy(() => import('src/pages/reserva-create'));
 export const ReservaEditPage = lazy(() => import('src/pages/reserva-edit'));
 export const DisponibilidadPage = lazy(() => import('src/pages/disponibilidad'));
+export const DisponibilidadCrearPage = lazy(() => import('src/pages/disponibilidad-crear'));
 
 //users
 export const UserCreatePage = lazy(() => import('src/pages/user-create'));
@@ -202,6 +203,14 @@ export const routesSection: RouteObject[] = [
         element: (
           <RoleGuard roles={['SuperAdmin', 'ClubAdmin', 'AgendaCreator', 'CourtManager']}>
             <DisponibilidadPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'disponibilidad/crear',
+        element: (
+          <RoleGuard roles={['SuperAdmin', 'ClubAdmin', 'AgendaCreator', 'CourtManager']}>
+            <DisponibilidadCrearPage />
           </RoleGuard>
         ),
       },

@@ -1,11 +1,17 @@
 import { useState, useCallback } from 'react';
 
-export function useTable() {
+type UseTableProps = {
+  defaultOrder?: 'asc' | 'desc';
+  defaultOrderBy?: string;
+  defaultRowsPerPage?: number;
+};
+
+export function useTable(props?: UseTableProps) {
   const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('nombre');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [orderBy, setOrderBy] = useState(props?.defaultOrderBy ?? 'nombre');
+  const [rowsPerPage, setRowsPerPage] = useState(props?.defaultRowsPerPage ?? 5);
   const [selected, setSelected] = useState<string[]>([]);
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [order, setOrder] = useState<'asc' | 'desc'>(props?.defaultOrder ?? 'asc');
 
   const onSort = useCallback(
     (id: string) => {

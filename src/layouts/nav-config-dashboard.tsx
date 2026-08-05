@@ -144,6 +144,18 @@ export const navData: NavItem[] = [
       'AgendaCreator',
       'CourtManager'
     ],
+    children: [
+      {
+        title: 'Listado',
+        path: '/dashboard/disponibilidad',
+        icon: icon('ic-list'),
+      },
+      {
+        title: 'Crear',
+        path: '/dashboard/disponibilidad/crear',
+        icon: icon('ic-add'),
+      },
+    ],
   },
 
 ];

@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -13,8 +18,17 @@ import { getDisponibilidadPublica } from 'src/services/reserva.service';
 import { getComunas, getRegiones } from 'src/services/location.service';
 import type { CanchaOferta, ConsultaDisponibilidadParams } from 'src/types/reserva';
 import type { Comuna, Region } from 'src/services/location.service';
+import { Container } from '@mui/material';
 
 export function LandingDisponibilidad() {
+  const baseFotos = (import.meta.env.VITE_URL_FOTOS ?? '').toString();
+  const pref = (url?: string | null) => {
+    if (!url) return undefined;
+    if (/^https?:\/\//.test(url)) return url;
+    const base = baseFotos.replace(/\/+$/, '');
+    return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+  };
+
   const [regiones, setRegiones] = useState<Region[]>([]);
   const [comunas, setComunas] = useState<Comuna[]>([]);
   const [selectedRegion, setSelectedRegion] = useState('');
@@ -60,7 +74,7 @@ export function LandingDisponibilidad() {
     loadDisponibilidad();
   }, [selectedRegion, selectedComuna]);
 
-  const handleRegionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRegionChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const regionCode = event.target.value;
     setSelectedRegion(regionCode);
     setSelectedComuna('');
@@ -74,71 +88,114 @@ export function LandingDisponibilidad() {
     }
   };
 
-  const totalDisponibles = useMemo(
-    () => ofertas.reduce((acc, cancha) => acc + cancha.horariosDisponibles.filter((slot) => slot.disponible).length, 0),
+  const resumenPorClub = useMemo(
+    () =>
+      ofertas.map((cancha) => {
+        const disponibles = cancha.horariosDisponibles.filter((slot) => slot.disponible);
+        const proximosDias = Array.from(new Set(disponibles.map((slot) => slot.fechaInicio.slice(0, 10)))).slice(0, 3);
+
+        return {
+          cancha,
+          disponiblesCount: disponibles.length,
+          proximosDias,
+        };
+      }),
     [ofertas]
   );
 
+  const handleClearFilters = () => {
+    setSelectedRegion('');
+    setSelectedComuna('');
+    setComunas([]);
+  };
+
   return (
-    <Card sx={{ p: 3, my: 4 }}>
-      <Stack spacing={3}>
-        <Box>
-          <Typography variant="h5">Disponibilidad pública</Typography>
+    <Container maxWidth="xl">
+      <Card sx={{ p: 3, my: 4 }}>
+        <Stack spacing={3}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Box>
+              <Typography variant="h5">Disponibilidad pública</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Revisa los clubes que tienen disponibilidad para los próximos días y entra como cliente para reservar horarios.
+              </Typography>
+            </Box>
+
+            <Button variant="outlined" onClick={handleClearFilters} disabled={!selectedRegion && !selectedComuna}>
+              Limpiar filtros
+            </Button>
+          </Box>
+
+          {error ? <Alert severity="error">{error}</Alert> : null}
+
+          <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
+            <TextField select fullWidth label="Región" value={selectedRegion} onChange={handleRegionChange}>
+              <MenuItem value="">Todas las regiones</MenuItem>
+              {regiones.map((region) => (
+                <MenuItem key={region.codigo} value={region.codigo}>
+                  {region.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField select fullWidth label="Comuna" value={selectedComuna} onChange={(event) => setSelectedComuna(event.target.value)} disabled={!selectedRegion}>
+              <MenuItem value="">Todas las comunas</MenuItem>
+              {comunas.map((comuna) => (
+                <MenuItem key={comuna.codigo} value={comuna.codigo}>
+                  {comuna.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+
           <Typography variant="body2" color="text.secondary">
-            Consulta disponibilidad general y luego refina por región y comuna.
+            {/* {loading ? 'Cargando disponibilidad...' : `${resumenPorClub.reduce((acc, item) => acc + item.disponiblesCount, 0)} bloques disponibles`} */}
+            {loading ? 'Cargando disponibilidad...' : ''}
           </Typography>
-        </Box>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
+          {loading ? null : resumenPorClub.length === 0 ? (
+            <Alert severity="info">No hay disponibilidad para los filtros seleccionados.</Alert>
+          ) : (
+            <Grid container spacing={3}>
+              {resumenPorClub.map(({ cancha, disponiblesCount, proximosDias }) => (
+                <Grid key={`${cancha.clubId}-${cancha.canchaId}`} size={{ xs: 12, md: 4 }}>
+                  <Card sx={{ height: '100%', borderRadius: 3 }}>
+                    <CardMedia
+                      component="img"
+                      height="220"
+                      image={pref(cancha.fotoPrincipalUrl ?? cancha.fotoClubUrl) ?? '/assets/images/cover/cover-2.jpg'}
+                      alt={cancha.nombreClub}
+                    />
 
-        <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
-          <TextField select fullWidth label="Región" value={selectedRegion} onChange={handleRegionChange}>
-            {regiones.map((region) => (
-              <MenuItem key={region.codigo} value={region.codigo}>
-                {region.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                      <Typography variant="h6">{cancha.nombreClub}</Typography>
+                      <Typography variant="body1" color="text.secondary">
+                        <strong>{cancha.nombreCancha}</strong> 
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ minHeight: 35 }}>
+                        📍 {cancha.regionNombre}, {cancha.comunaNombre}, {cancha.direccionClub}
+                      </Typography>
+                      <Typography variant="body2">
+                        Base: ${cancha.precioHoraBase.toLocaleString('es-CL')}/hora
+                      </Typography>
 
-          <TextField select fullWidth label="Comuna" value={selectedComuna} onChange={(event) => setSelectedComuna(event.target.value)} disabled={!selectedRegion}>
-            {comunas.map((comuna) => (
-              <MenuItem key={comuna.codigo} value={comuna.codigo}>
-                {comuna.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Box>
-
-        <Typography variant="body2" color="text.secondary">
-          {loading ? 'Cargando disponibilidad...' : `${totalDisponibles} horarios disponibles`}
-        </Typography>
-
-        {loading ? null : ofertas.length === 0 ? (
-          <Alert severity="info">No hay disponibilidad para los filtros seleccionados.</Alert>
-        ) : (
-          <Stack spacing={2}>
-            {ofertas.map((cancha) => (
-              <Card key={cancha.canchaId} variant="outlined" sx={{ p: 2 }}>
-                <Stack spacing={1}>
-                  <Typography variant="subtitle1">{cancha.nombreCancha}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Base: ${cancha.precioHoraBase.toLocaleString('es-CL')}/hora
-                  </Typography>
-                  <Box display="flex" flexWrap="wrap" gap={1}>
-                    {cancha.horariosDisponibles.map((slot, index) => (
-                      <Button key={`${cancha.canchaId}-${index}`} variant="outlined" color={slot.disponible ? 'primary' : 'inherit'} disabled={!slot.disponible}>
-                        {new Date(slot.fechaInicio).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
-                        {' — '}
-                        {new Date(slot.fechaFin).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        sx={{
+                          mt: 3,
+                        }}
+                      >
+                        Reservar
                       </Button>
-                    ))}
-                  </Box>
-                </Stack>
-              </Card>
-            ))}
-          </Stack>
-        )}
-      </Stack>
-    </Card>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Stack>
+      </Card>
+    </Container>
   );
 }

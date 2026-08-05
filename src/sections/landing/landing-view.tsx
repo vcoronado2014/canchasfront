@@ -25,7 +25,8 @@ export function LandingView() {
         <Navbar/>
         <Hero/>
         <LandingDisponibilidad />
-        <FeaturedClubs clubs={_clubs} />
+        
+        {/* <FeaturedClubs clubs={_clubs} /> */}
 
         <Sports/>
         <HowItWorks/>

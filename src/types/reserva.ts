@@ -46,12 +46,32 @@ export type SlotDisponibilidad = {
   motivoOcupado?: string;
 };
 
-export type CanchaOferta = {
+/* export type CanchaOferta = {
   canchaId: number;
   nombreCancha: string;
   tipoCancha: TipoCancha;
   precioHoraBase: number;
   fotoPrincipalUrl?: string;
+  horariosDisponibles: SlotDisponibilidad[];
+}; */
+
+export type CanchaOferta = {
+  // Datos del Club
+  clubId: number;
+  nombreClub: string;
+  direccionClub: string;
+  comunaNombre: string;
+  regionNombre: string;
+  fotoClubUrl?: string | null;
+
+  // Datos de la Cancha
+  canchaId: number;
+  nombreCancha: string;
+  tipoCancha: TipoCancha;
+  precioHoraBase: number;
+  fotoPrincipalUrl?: string | null;
+
+  // Slots
   horariosDisponibles: SlotDisponibilidad[];
 };
 
@@ -68,12 +88,25 @@ export type ConsultaDisponibilidadParams = {
 };
 
 // DTO para la creación de reserva online por parte del cliente
-export type CrearReservaClientePayload = {
+/* export type CrearReservaClientePayload = {
   canchaId: number;
   fechaInicio: string; // ISO String
   fechaFin: string;    // ISO String
   montoTotal: number;
   metodoPago: MetodoPago;
+}; */
+
+export interface BloqueReservaPayload {
+  fechaInicio: string; // ISO String local
+  fechaFin: string;    // ISO String local
+}
+
+// DTO para la creación de reserva online por parte del cliente (Lote de bloques)
+export type CrearReservaClientePayload = {
+  canchaId: number;
+  montoTotal: number;
+  metodoPago: MetodoPago;
+  bloques: BloqueReservaPayload[];
 };
 
 // DTO para la creación de reserva presencial (Staff)
@@ -132,13 +165,9 @@ export type CrearDisponibilidadRangoPayload = {
 export type DisponibilidadItem = {
   id: number;
   canchaId: number;
+  nombreCancha: string;
   fecha: string;
   horaInicio: string;
   horaFin: string;
   motivo?: string;
-  cancha?: {
-    id: number;
-    nombre: string;
-    clubId: number;
-  };
 };
