@@ -30,7 +30,7 @@ export function SignInView() {
   const [error, setError] = useState('');
 
 
-  const handleSignIn = useCallback(async () => {
+/*   const handleSignIn = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -38,7 +38,17 @@ export function SignInView() {
       const auth = await login(email, password);
 
       if (auth.tipo === "Cliente") {
-        router.push("/cliente");
+        // 1. Leemos el destino guardado
+        const redirectTo = sessionStorage.getItem("redirectTo");
+
+        if (redirectTo) {
+          // 2. Limpiamos la clave para que no afecte logins futuros
+          sessionStorage.removeItem("redirectTo");
+          router.push('/cliente/disponibilidad');
+        } else {
+          // 3. Flujo normal: entra directo a /cliente
+          router.push("/cliente/disponibilidad");
+        }
       } else {
         router.push("/dashboard");
       }
@@ -48,7 +58,22 @@ export function SignInView() {
     } finally {
       setLoading(false);
     }
-  }, [email, password, login, router]);
+  }, [email, password, login, router]); */
+  
+  const handleSignIn = useCallback(async () => {
+  try {
+    setLoading(true);
+    setError("");
+
+    // Solo ejecutas el login, GuestGuard se encarga de la redirección automáticamente
+    await login(email, password);
+
+  } catch (err) {
+    setError(getApiError(err));
+  } finally {
+    setLoading(false);
+  }
+}, [email, password, login]);
 
   const renderForm = (
     <Box

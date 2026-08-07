@@ -1,4 +1,36 @@
-import type { IconifyJSON } from '@iconify/react';
+import type { IconifyIcon } from '@iconify/react';
+import { addIcon } from '@iconify/react';
+import allIcons from './icon-sets';
+
+export const allIconNames = Object.keys(allIcons) as IconifyName[];
+//export type IconifyName = keyof typeof allIcons;
+export type IconifyName = keyof typeof allIcons | (string & {});
+
+let areIconsRegistered = false;
+
+export function registerIcons() {
+  if (areIconsRegistered) {
+    return;
+  }
+
+  Object.entries(allIcons).forEach(([iconName, iconData]) => {
+    const isCarbon = iconName.startsWith('carbon:');
+    const defaultSize = isCarbon ? 32 : 24;
+    
+    // Casteamos a IconifyIcon para que TypeScript reconozca width/height opcionales
+    const icon = iconData as IconifyIcon;
+
+    addIcon(iconName, {
+      ...icon,
+      width: icon.width ?? defaultSize,
+      height: icon.height ?? defaultSize,
+    });
+  });
+
+  areIconsRegistered = true;
+}
+
+/* import type { IconifyJSON } from '@iconify/react';
 
 import { addCollection } from '@iconify/react';
 
@@ -49,3 +81,4 @@ export function registerIcons() {
 
   areIconsRegistered = true;
 }
+ */

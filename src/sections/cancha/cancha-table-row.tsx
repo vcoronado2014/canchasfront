@@ -23,6 +23,7 @@ import { Iconify } from 'src/components/iconify';
 import { useAuth } from 'src/auth/use-auth';
 import { deleteCancha } from 'src/services/cancha.service';
 import type { CanchaListItem } from 'src/types/cancha';
+import { TIPO_CANCHA_MAP } from 'src/types/cancha';
 
 type CanchaTableRowProps = {
   row: CanchaListItem;
@@ -116,7 +117,7 @@ export function CanchaTableRow({ row, selected, compact = false, onSelectRow, on
                   {row.nombre}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" noWrap>
-                  {row.tipoCancha}
+                  {TIPO_CANCHA_MAP[Number(row.tipoCancha)] ?? 'Desconocido'}
                 </Typography>
               </Box>
             </Box>
@@ -234,7 +235,7 @@ export function CanchaTableRow({ row, selected, compact = false, onSelectRow, on
         </TableCell>
 
         <TableCell component="th">{row.nombre}</TableCell>
-        <TableCell>{row.tipoCancha}</TableCell>
+        <TableCell>{TIPO_CANCHA_MAP[Number(row.tipoCancha)] ?? 'Desconocido'}</TableCell>
         <TableCell>${row.precioHora.toLocaleString()}</TableCell>
         <TableCell>{row.duracionMinimaMinutos} min</TableCell>
 

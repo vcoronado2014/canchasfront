@@ -237,10 +237,11 @@ export const routesSection: RouteObject[] = [
     ),
     children: [
       {
-        index: true,
+        //index: true,
         element: <ClientHomePage />,
       },
       {
+        index: true,
         path: 'disponibilidad',
         element: <ClienteDisponibilidadPage />,
       },
